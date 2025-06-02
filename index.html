@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ai Khusus</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    input, button {
+      padding: 10px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    #jawaban {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #aaa;
+      background: #f9f9f9;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Ai Khusus</h2>
+  
+  <p>ketik "menu" untuk melihat daftar menu
+  </p>
+
+  <input type="text" id="pertanyaan" placeholder="Tulis pertanyaan di sini..." />
+  <button onclick="jawab()">Tanya</button>
+
+  <div id="jawaban"></div>
+
+  <script>
+    const qa = {
+      "apa itu ai": "AI adalah singkatan dari Artificial Intelligence, yaitu kecerdasan buatan.",
+      
+      
+      "berapa hasil 2+2": "Hasilnya adalah 4.",
+      
+      
+
+       "menu":
+`beberapa menu yang tersedia:
+1.hehe`,
+
+
+
+       "hehe":
+`berikur beberapa ... yang tersedia:
+1.aku gamon ma kau dew:v
+2.maaf yah dulu aku minta putus
+3.gw si gak maksa buat yaaa bareng lagi
+ya gw sebenernya mo bilang pas kau gak disini lagi cuman gw gamau dpt jawaban yang ku bayangkan ya setidaknya bilang ehehe
+
+ya setidaknya kalo ada orang yang baru kau suka kasih tau ke gw ya setidaknya tau`,
+    };
+
+    function hitungEkspresi(teks) {
+      let ekspresi = teks.replace(/×|x/gi, '*')
+                         .replace(/÷|:/g, '/')
+                         .replace(/,/g, '.');
+      if (/^[0-9\.\s\+\-\*\/]+$/.test(ekspresi)) {
+        try {
+          const hasil = eval(ekspresi);
+          const hasilFormatted = hasil.toString().replace('.', ',');
+          const tampilan = teks.replace(/\*/g, '×').replace(/\//g, '÷');
+          return `${tampilan} = ${hasilFormatted}`;
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+
+    async function translateOtomatis(teks, target) {
+      try {
+        const res = await fetch("https://libretranslate.com/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            q: teks,
+            source: "auto",
+            target: target,
+            format: "text"
+          })
+        });
+        const data = await res.json();
+        return data.translatedText;
+      } catch (err) {
+        return "Gagal menerjemahkan (koneksi atau server error).";
+      }
+    }
+
+    async function jawab() {
+      const input = document.getElementById("pertanyaan").value.toLowerCase().trim();
+      const output = document.getElementById("jawaban");
+
+      if (qa[input]) {
+        output.innerHTML = qa[input]; // Gunakan innerHTML agar HTML bisa dirender
+        return;
+      }
+
+      if (input.startsWith("translate ") || input.startsWith("terjemahkan ")) {
+        const kalimat = input.replace(/^translate |^terjemahkan /, "").trim();
+        const target = /^[a-z\s]+$/.test(kalimat) ? "id" : "en";
+        const hasil = await translateOtomatis(kalimat, target);
+        output.textContent = hasil;
+        return;
+      }
+
+      const hasilHitung = hitungEkspresi(input);
+      if (hasilHitung) {
+        output.textContent = hasilHitung;
+        return;
+      }
+
+      output.textContent = "Maaf,saya gamon sama kau.";
+    }
+  </script>
+  
+  
+</body>
+</html>
